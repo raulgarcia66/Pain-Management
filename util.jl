@@ -1,11 +1,11 @@
 
-function compute_reachable_states(P, current_state, action)
+function compute_reachable_states(current_state, action, P)
     # Returns indices of reachable states
     ϵ = 1E-5
     return filter(j -> P[action][current_state, j] > ϵ, 1:size(P[action],2))
 end
 
-function gen_next_state(P, current_state, action)
+function gen_next_state(current_state, action, P)
     U = rand()
     sum = 0
     for i in eachindex(P[action][current_state, :])
