@@ -1,39 +1,26 @@
 using LinearAlgebra
 using Pipe
 
-# Value Iteration
+function compute_policy(states, actions, action_sets, R, P, T)
+    # Compute policy via value iteration
+    num_states = length(states)
+    # num_actions = length(actions)
 
-d = Vector{String}(undef, num_states)   # policy
-v_current = zeros(num_states)   # arbitrary initial values
-v_next = Vector{Float64}(undef, num_states)
-max_iter = 5000
-tol = 1e-5
-n = 1
+    π = [zeros(Int, num_states) for _ in 1:T]   # policy via action indices
+    u = [zeros(num_states) for _ in 1:T+1]
+    # u_temp = zeros(num_states)
 
-while n < max_iter
-    for s in states
-        reward_wait = R_pre[s] + λ * sum( P[s,j] * v_current[j] for j in states )
-        reward_transplant = R_post[s]
-        if reward_wait >= reward_transplant
-            global v_next[s] = reward_wait
-            global d[s] = "W"
-        else
-            global v_next[s] = reward_transplant
-            global d[s] = "T"
+    reachable_states = map(a -> map(i ->  compute_reachable_states(i, a, P), eachindex(states)), eachindex(actions))
+    for t = T:-1:1
+        for i in eachindex(states)
+
+            u_temp = map(a -> sum([ P[a][i,j] * (R[a,i,j] + u[t+1][j]) for j in reachable_states[a][i] ]), action_sets[i])
+            u[t][i] = maximum(u_temp)
+
+            π[t][i] = @pipe findfirst(==(u[t][i]), u_temp) |> action_sets[i][_]
+
         end
     end
 
-    # if n % 100 == 0
-    #     println("Norm: $(norm(v_next - v_current))")
-    # end
-
-    if norm(v_next - v_current) < tol * (1-λ)/(2λ)
-        break
-    end
-
-    global v_current = copy(v_next)
-    global n += 1
+    return u, π
 end
-
-v1 = copy(v_current)
-d1 = copy(d)
