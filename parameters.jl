@@ -1,6 +1,7 @@
 using XLSX
 using DataFrames
 using Pipe
+include("./util.jl")
 
 data_xlsx = XLSX.readxlsx("patients-states.xlsx")
 sheet = data_xlsx["Sheet1"]
@@ -22,11 +23,11 @@ df_counts = @pipe DataFrame(sheet["V2:AM19"], col_names) |> convert.(Int, _)
 actions = ["+2", "+1", "0" , "-1", "-2"]
 num_actions = length(actions)
 
-action_set = [(1,2,3), (1,2,3), (1,2,3), (1,2,3), (1,2,3), (1,2,3),
+action_sets = [(1,2,3), (1,2,3), (1,2,3), (1,2,3), (1,2,3), (1,2,3),
               (2,3,4), (2,3,4), (2,3,4), (2,3,4), (2,3,4), (2,3,4),
               (3,4,5), (3,4,5), (3,4,5), (3,4,5), (3,4,5), (3,4,5)]
-action_set[1]
-# For j ∈ action_set[i], state i can take action actions[j]
+action_sets[1]
+# For j ∈ action_sets[i], state i can take action actions[j]
 
 ##### Transition probabilities
 P_full = Matrix(df)
@@ -40,13 +41,17 @@ end
 P[1][1:6, 13:18] = P_full[1:6, 13:18]
 P[1]
 
-P[2][1:12, 7:18] = P_full[1:12, 7:18]
+P[2][1:6, 7:12] = P_full[1:6, 7:12]
+P[2][7:12, 13:18] = P_full[7:12, 13:18]
 P[2]
 
-P[3] = copy(P_full)
+P[3][1:6, 1:6] = P_full[1:6, 1:6]
+P[3][7:12, 7:12] = P_full[7:12, 7:12]
+P[3][13:18, 13:18] = P_full[13:18, 13:18]
 P[3]
 
-P[4][7:18, 1:12] = P_full[7:18, 1:12]
+P[4][7:12, 1:6] = P_full[7:12, 1:6]
+P[4][13:18, 7:12] = P_full[13:18, 7:12]
 P[4]
 
 P[5][13:18, 1:6] = P_full[13:18, 1:6]
@@ -63,7 +68,7 @@ functionality_values = [-1,0,1]
     # MS = 0
 pain_level_values = [0.5, 0]
 
-reachable_states = map(a -> map(i ->  compute_reachable_states(P, i, a), eachindex(states)), eachindex(actions))
+reachable_states = map(a -> map(i ->  compute_reachable_states(i, a, P), eachindex(states)), eachindex(actions))
 # filter!(vec -> !isempty(vec), reachable_states[1])
 reachable_states[1]
 
@@ -78,9 +83,9 @@ state_pain_partition = [states_with_MM, states_with_MS]
 
 R = zeros(num_actions, num_states, num_states)
 for i in eachindex(states)
-    for a_ind in action_set[i]
-        # println("In state $i, taking action $(actions[a_ind]), able to reach states $(reachable_states[a_ind][i])\n")
-        for j in reachable_states[a_ind][i]
+    for a in action_sets[i]
+        # println("In state $i, taking action $(actions[a]), able to reach states $(reachable_states[a][i])\n")
+        for j in reachable_states[a][i]
 
             reward = 0
 
@@ -133,8 +138,31 @@ for i in eachindex(states)
             reward += functionality_values[health_list_ind_j] - functionality_values[health_list_ind_i]
             reward += pain_level_values[pain_list_ind_j] - pain_level_values[pain_list_ind_i]
 
-            R[a_ind,i,j] = reward
+            R[a,i,j] = reward
         end
     end
 end
 R
+
+##### Compute policy
+T = 6
+u, π = compute_policy(states, actions, action_sets, R, P, T)
+
+u[6]
+π[1][1]
+
+filename = "Policy 1.txt"
+f = open(filename, "w")
+for t = 1:T, i in eachindex(states)
+    # println("t = $t")
+    # println("state = $i")
+    # println("action = $(actions[π[t][i] ])")
+    # println("Expected value = $(u[t][i])\n")
+    
+    write(f, "t = $t\n")
+    write(f, "state = $i\n")
+    write(f, "action = $(actions[π[t][i] ])\n")
+    write(f, "Expected value = $(u[t][i])\n\n")
+    flush(f)
+end
+close(f)
