@@ -10,7 +10,8 @@ function compute_policy(states, actions, action_sets, R, P, T)
     u = [zeros(num_states) for _ in 1:T+1]
     # u_temp = zeros(num_states)
 
-    reachable_states = map(a -> map(i ->  compute_reachable_states(i, a, P), eachindex(states)), eachindex(actions))
+    reachable_states = compute_reachable_states_vector(states, actions, P)
+    # reachable_states[a][i] is indices of states reachable to i after taking action a
     for t = T:-1:1
         for i in eachindex(states)
 

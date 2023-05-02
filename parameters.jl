@@ -68,9 +68,9 @@ functionality_values = [-1,0,1]
     # MS = 0
 pain_level_values = [0.5, 0]
 
-reachable_states = map(a -> map(i ->  compute_reachable_states(i, a, P), eachindex(states)), eachindex(actions))
-# filter!(vec -> !isempty(vec), reachable_states[1])
-reachable_states[1]
+reachable_states = compute_reachable_states_vector(states, actions, P)
+# reachable_states[a][i] is indices of states reachable to i after taking action a
+reachable_states[1][5]
 
 states_with_poor = [i for i = 1:3:18]
 states_with_acceptable = [i for i = 2:3:18]
