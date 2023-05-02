@@ -145,8 +145,9 @@ end
 R
 
 ##### Compute policy
-T = 6
-u, π = compute_policy(states, actions, action_sets, R, P, T)
+T = 7
+u_terminal = zeros(num_states)
+u, π = compute_policy(states, actions, action_sets, R, P, T; u_terminal=u_terminal)
 
 u[6]
 π[1][1]

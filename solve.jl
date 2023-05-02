@@ -1,14 +1,14 @@
 using LinearAlgebra
 using Pipe
 
-function compute_policy(states, actions, action_sets, R, P, T)
+function compute_policy(states, actions, action_sets, R, P, T; u_terminal=zeros(length(states)))
     # Compute policy via value iteration
     num_states = length(states)
     # num_actions = length(actions)
 
     π = [zeros(Int, num_states) for _ in 1:T]   # policy via action indices
     u = [zeros(num_states) for _ in 1:T+1]
-    # u_temp = zeros(num_states)
+    u[8] = u_terminal
 
     reachable_states = compute_reachable_states_vector(states, actions, P)
     # reachable_states[a][i] is indices of states reachable to i after taking action a
