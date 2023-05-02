@@ -173,18 +173,28 @@ u, π = compute_policy(states, actions, action_sets, R, P, T; u_terminal=u_termi
 u[1]
 π[1][1]
 
-filename = "Policy 1.txt"
-f = open(filename, "w")
-for t = 1:T, i in eachindex(states)
-    # println("t = $t")
-    # println("state = $i")
-    # println("action = $(actions[π[t][i] ])")
-    # println("Expected value = $(u[t][i])\n")
-    
-    write(f, "t = $t\n")
-    write(f, "state = $i\n")
-    write(f, "action = $(actions[π[t][i] ])\n")
-    write(f, "Expected reward = $(u[t][i])\n\n")
-    flush(f)
+exp_num = 1
+
+filename_policy = "Policy $exp_num.txt"
+f = open(filename_policy, "w")
+# Parameter info
+write(f, "Experiment $exp_num\n")
+write(f, "T = $T\n")
+write(f, "u_terminal = $u_terminal\n")
+write(f, "functionality_values = $functionality_values   # Poor, Acceptable, Good\n")
+write(f, "pain_level_values = $pain_level_values   # MM, MS\n")
+write(f, "\n")
+# Policy
+write(f, "\tT\t\t")
+for t = 1:T
+    write(f, "$t\t\t")
+end
+write(f, "\n")
+for i in eachindex(states)
+    write(f, "$(states[i])\t")
+    for t in 1:T
+        write(f, "$(actions[π[t][i]])\t\t")
+    end
+    write(f, "\n")
 end
 close(f)
