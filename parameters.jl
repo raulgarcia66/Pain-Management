@@ -1,3 +1,7 @@
+"""
+Compute parameters for pain management MDP framework.
+"""
+
 using XLSX
 using DataFrames
 using Pipe
@@ -8,19 +12,23 @@ include("./solve.jl")
 data_xlsx = XLSX.readxlsx("patients-states.xlsx")
 sheet = data_xlsx["Sheet1"]
 
+# Create DataFames for boostrapped transition matrix, original transition matrix, and transition counts
+col_names = ["$i" for i = 1:18]
+df = @pipe DataFrame(sheet["V42:AM59"], col_names) |> convert.(Float64, _)
+df_orig = @pipe DataFrame(sheet["V22:AM39"], col_names) |> convert.(Float64, _)
+df_counts = @pipe DataFrame(sheet["V2:AM19"], col_names) |> convert.(Int, _)
+
+##### Horizon
+T = 7   # num decision epochs (⟹ horizon is T+1)
+
+
 ##### States
 states = ["[0,P,MM]", "[0,A,MM]", "[0,G,MM]", "[0,P,MS]", "[0,A,MS]", "[0,G,MS]",
     "[1,P,MM]", "[1,A,MM]", "[1,G,MM]", "[1,P,MS]", "[1,A,MS]", "[1,G,MS]",
     "[2,P,MM]", "[2,A,MM]", "[2,G,MM]", "[2,P,MS]", "[2,A,MS]", "[2,G,MS]" ]
 num_states = length(states)
 # state_map = Dict([i => state_desc[i] for i = 1:18])
-# state_map[2]
 
-# Create DataFames for boostrapped transition matrix, original transition matrix, and transition counts
-col_names = ["$i" for i = 1:18]
-df = @pipe DataFrame(sheet["V42:AM59"], col_names) |> convert.(Float64, _)
-df_orig = @pipe DataFrame(sheet["V22:AM39"], col_names) |> convert.(Float64, _)
-df_counts = @pipe DataFrame(sheet["V2:AM19"], col_names) |> convert.(Int, _)
 
 ##### Action space
 actions = ["+2", "+1", "0" , "-1", "-2"]
@@ -32,16 +40,16 @@ action_sets = [(1,2,3), (1,2,3), (1,2,3), (1,2,3), (1,2,3), (1,2,3),
 action_sets[1]
 # action_sets[i] is the indices of the actions that state i can take
 
+
 ##### Transition probabilities
 P_full = Matrix(df)
-P_full[13:18,7:12]
+# P_full[13:18,7:12]
 # TODO: P_full[13:18,7:12] is all zeros, same for P_full_orig and trans_counts
 P_full_orig = Matrix(df_orig)
 trans_counts = Matrix(df_counts)
 
-# Create a matrix for each action by grabbing the portion that corresponds to the action
-# and zero-ing out all other transitions (to assure there aren't any transitions to states
-# that aren't theoretically reachable)
+# Create matrix for each action by grabbing the portion that corresponds to the action
+# and zero-ing out all other transitions (non-reachable)
 P = Vector{Matrix{Float64}}(undef, length(actions))
 for i in eachindex(P)
     P[i] = zeros(size(P_full))
@@ -78,123 +86,6 @@ for row in eachrow(P[5]) println("$(sum(row))") end
 #     end
 # end
 
+
 ##### Rewards
-# Patient functionality:
-    # Poor = -1
-    # Acceptable = 0
-    # Good = 1
-functionality_values = [-1,0,1]
-# Patient pain level
-    # MM = 0.5
-    # MS = 0
-pain_level_values = [0.5, 0]
-
-reachable_states = compute_reachable_states_vector(states, actions, P)
-# reachable_states[a][i] is indices of states reachable to i after taking action a
-reachable_states[1][5]
-
-states_with_poor = [i for i = 1:3:18]
-states_with_acceptable = [i for i = 2:3:18]
-states_with_good = [i for i = 3:3:18]
-state_health_partition = [states_with_poor, states_with_acceptable, states_with_good]
-
-states_with_MM = @pipe Iterators.flatten([[i; i+1; i+2] for i in 1:6:18]) |> collect(_)
-states_with_MS = @pipe Iterators.flatten([[i; i+1; i+2] for i in 4:6:18]) |> collect(_)
-state_pain_partition = [states_with_MM, states_with_MS]
-
-R = zeros(num_actions, num_states, num_states)
-for i in eachindex(states)
-    for a in action_sets[i]
-        # println("In state $i, taking action $(actions[a]), able to reach states $(reachable_states[a][i])\n")
-        for j in reachable_states[a][i]
-
-            reward = 0
-
-            ### Current state i
-            health_list_ind_i = 0
-            for k = eachindex(state_health_partition)
-                if i in state_health_partition[k]
-                    health_list_ind_i = k
-                    break
-                end
-            end
-            if health_list_ind_i == 0
-                error("Current state $i not found in state_health_partition")
-            end
-
-            pain_list_ind_i = 0
-            for k = eachindex(state_pain_partition)
-                if i in state_pain_partition[k]
-                    pain_list_ind_i = k
-                    break
-                end
-            end
-            if pain_list_ind_i == 0
-                error("Current state $i not found in state_pain_partition")
-            end
-
-            ### Future state j
-            health_list_ind_j = 0
-            for k = eachindex(state_health_partition)
-                if j in state_health_partition[k]
-                    health_list_ind_j = k
-                    break
-                end
-            end
-            if health_list_ind_j == 0
-                error("Future state $j not found in state_health_partition")
-            end
-
-            pain_list_ind_j = 0
-            for k = eachindex(state_pain_partition)
-                if j in state_pain_partition[k]
-                    pain_list_ind_j = k
-                    break
-                end
-            end
-            if pain_list_ind_j == 0
-                error("Future state $j not found in state_pain_partition")
-            end
-
-            reward += functionality_values[health_list_ind_j] - functionality_values[health_list_ind_i]
-            reward += pain_level_values[pain_list_ind_j] - pain_level_values[pain_list_ind_i]
-
-            R[a,i,j] = reward
-        end
-    end
-end
-R
-
-##### Compute policy
-T = 7
-u_terminal = zeros(num_states)
-u, π = compute_policy(states, actions, action_sets, R, P, T; u_terminal=u_terminal)
-
-u[1]
-π[1][1]
-
-exp_num = 1
-
-filename_policy = "Policy $exp_num.txt"
-f = open(filename_policy, "w")
-# Parameter info
-write(f, "Experiment $exp_num\n")
-write(f, "T = $T\n")
-write(f, "u_terminal = $u_terminal\n")
-write(f, "functionality_values = $functionality_values   # Poor, Acceptable, Good\n")
-write(f, "pain_level_values = $pain_level_values   # MM, MS\n")
-write(f, "\n")
-# Policy
-write(f, "\tT\t\t")
-for t = 1:T
-    write(f, "$t\t\t")
-end
-write(f, "\n")
-for i in eachindex(states)
-    write(f, "$(states[i])\t")
-    for t in 1:T
-        write(f, "$(actions[π[t][i]])\t\t")
-    end
-    write(f, "\n")
-end
-close(f)
+# See policy.jl
