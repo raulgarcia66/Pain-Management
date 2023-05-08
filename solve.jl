@@ -1,3 +1,7 @@
+"""
+Algorithm implementations for policy computation.
+"""
+
 using LinearAlgebra
 using Pipe
 
@@ -51,11 +55,13 @@ function compute_policy_mult_actions(states, actions, action_sets::Vector{W}, R,
         end
     end
 
+    optimal_actions = Tuple{Int, Int}[]
     for t = 1:T, i = 1:num_states
         if length(π[t][i]) > 1
+            push!(optimal_actions, (t,i))
             println("Multiple optical actions for (t,i) = ($t,$i)")
         end
     end
 
-    return u, π
+    return u, π, optimal_actions
 end
