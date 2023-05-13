@@ -57,27 +57,27 @@ end
 
 P[1][1:6, 13:18] = P_full[1:6, 13:18]
 P[1]
-for row in eachrow(P[1]) println("$(sum(row))") end
+# for row in eachrow(P[1]) println("$(sum(row))") end
 
 P[2][1:6, 7:12] = P_full[1:6, 7:12]
 P[2][7:12, 13:18] = P_full[7:12, 13:18]
 P[2]
-for row in eachrow(P[2]) println("$(sum(row))") end
+# for row in eachrow(P[2]) println("$(sum(row))") end
 
 P[3][1:6, 1:6] = P_full[1:6, 1:6]
 P[3][7:12, 7:12] = P_full[7:12, 7:12]
 P[3][13:18, 13:18] = P_full[13:18, 13:18]
 P[3]
-for row in eachrow(P[3]) println("$(sum(row))") end
+# for row in eachrow(P[3]) println("$(sum(row))") end
 
 P[4][7:12, 1:6] = P_full[7:12, 1:6]
 P[4][13:18, 7:12] = P_full[13:18, 7:12]
 P[4]
-for row in eachrow(P[4]) println("$(sum(row))") end
+# for row in eachrow(P[4]) println("$(sum(row))") end
 
 P[5][13:18, 1:6] = P_full[13:18, 1:6]
 P[5]
-for row in eachrow(P[5]) println("$(sum(row))") end
+# for row in eachrow(P[5]) println("$(sum(row))") end
 
 # for i in eachindex(P)
 #     println("\nMatrix for action $(actions[i])")
@@ -89,3 +89,4 @@ for row in eachrow(P[5]) println("$(sum(row))") end
 
 ##### Rewards
 # See policy.jl
+println("Executed parameters.jl")
