@@ -51,3 +51,9 @@ end, eachindex(states))
 u, π = compute_policy(states, actions, action_sets, R, P, T; u_terminal = u_terminal)
 u_mult, π_mult, opt_acts_mult = compute_policy_mult_actions(states, actions, action_sets, R, P, T; u_terminal = u_terminal)
 
+##############################################################################
+
+# set_num = 1
+mkpath("./Experiments/Simulations/Set $set_num")
+
+subpath = "./Experiments/Simulations/Set $set_num/"

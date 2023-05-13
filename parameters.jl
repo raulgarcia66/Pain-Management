@@ -42,8 +42,12 @@ action_sets[1]
 
 
 ##### Transition probabilities
-P_full = Matrix(df)
-# P_full[13:18,7:12]
+using_orig_matrix = false
+if !using_orig_matrix
+    P_full = Matrix(df)
+else
+    P_full = Matrix(df_orig)
+end
 # TODO: P_full[13:18,7:12] is all zeros, same for P_full_orig and trans_counts
 P_full_orig = Matrix(df_orig)
 trans_counts = Matrix(df_counts)
