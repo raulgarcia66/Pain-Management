@@ -15,17 +15,17 @@ state_pain_partition = [states_with_MM, states_with_MS]
 
 ##### Rewards
 # Patient functionality: [Poor, Acceptable, Good]
-functionality_values = [-1, 0, 1]
+functionality_values = [-2.0, 0.25, 1.0]
 
 # Patient pain level: [MM, MS]
-pain_level_values = [0.25, 0]
+pain_level_values = [0.25, -0.1]
 
 # Action penalties
 action_penalty(action_index, α = 1) = -α * (action_index == 1 ? 1 : 0)   # Penalize taking action "+2"
-α = 0.1
+α = 0.0
 
 # Reward matrix
-rewards_transition = true   # if true, use rewards that depend on transitions
+rewards_transition = false   # if true, use rewards that depend on transitions
 if rewards_transition
     R = construct_R_transition(states, actions, action_sets, P, α, state_health_partition, state_pain_partition,
                     functionality_values, pain_level_values, action_penalty)
@@ -33,6 +33,9 @@ else
     R = construct_R_state_occupation(states, actions, action_sets, P, α, state_health_partition, state_pain_partition, 
                     functionality_values, pain_level_values, action_penalty)
 end
+
+# write_R(R, states, actions, "Rewards transition.xlsx")
+# write_R(R, states, actions, "Rewards state occupation.xlsx")
 
 ##### Compute policy
 term_reward_func = [0.0, 0.0, 0.0]   # [Poor, Acceptable, Good]
@@ -133,13 +136,6 @@ term_reward_func_vec = [[0.0, 0.0, 0.0]]   # [Poor, Acceptable, Good]
 term_reward_pain_sev_vec = [[0.0, 0.0]]   # [MM, MS]
 # Reward matrix
 rewards_transition = false   # if true, use rewards that depend on transitions
-if rewards_transition
-    R = construct_R_transition(states, actions, action_sets, P, α, state_health_partition, state_pain_partition,
-                    functionality_values, pain_level_values, action_penalty)
-else
-    R = construct_R_state_occupation(states, actions, action_sets, P, α, state_health_partition, state_pain_partition, 
-                    functionality_values, pain_level_values, action_penalty)
-end
 
 set_num = 12
 mkpath("./Experiments/Policies/Set $set_num")

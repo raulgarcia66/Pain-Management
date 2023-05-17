@@ -2,6 +2,9 @@
 Helper/utility functions.
 """
 
+using XLSX
+
+
 function compute_reachable_states(current_state::Int, action::Int, P)
     # Returns indices of reachable states
     ϵ = 1E-5
@@ -37,6 +40,7 @@ function find_list_index(state::Int, lists::Vector{Vector{Int}})
     end
     error("Current state $i not found in state_health_partition")
 end
+
 
 """
 Rewards are received for when a transition from one state to another occurs.
@@ -106,3 +110,62 @@ function construct_R_state_occupation(states, actions, action_sets, P, α, state
 
     return R
 end
+
+
+function write_R(R, states, actions, filename)
+    ### Example 1
+    # XLSX.openxlsx("my_new_file.xlsx", mode="w") do xf
+    #     sheet = xf[1]
+    #     XLSX.rename!(sheet, "new_sheet")
+    #     sheet["A1"] = "this"
+    #     sheet["A2"] = "is a"
+    #     sheet["A3"] = "new file"
+    #     sheet["A4"] = 100
+    
+    #     # will add a row from "A5" to "E5"
+    #     sheet["A5"] = collect(1:5) # equivalent to `sheet["A5", dim=2] = collect(1:4)`
+    
+    #     # will add a column from "B1" to "B4"
+    #     sheet["B1", dim=1] = collect(1:4)
+    
+    #     # will add a matrix from "A7" to "C9"
+    #     sheet["A7:C9"] = [ 1 2 3 ; 4 5 6 ; 7 8 9 ]
+    # end
+
+    ### Example 2
+    # filename = "myfile.xlsx"
+
+    # # Some example data to try writing to .xlsx
+    # columns = Vector()
+    # push!(columns, [1, 2, 3])
+    # push!(columns, ["a", "b", "c"])
+    # labels = [ "column_1", "column_2"]
+
+    # XLSX.openxlsx(filename, mode="w") do xf
+    #     sheet = xf[1]
+    #     # Write our data to sheet 1
+    #     XLSX.writetable!(sheet, columns, labels, anchor_cell=XLSX.CellRef("A1"))
+    #     # Write the same data, but to a different place in the sheet
+    #     XLSX.writetable!(sheet, columns, labels, anchor_cell=XLSX.CellRef("D1"))
+    #     # Add a new sheet, which we will then access with xf[2]
+    #     XLSX.addsheet!(xf)
+    #     # Write the same data, but to sheet 2, in yet another position
+    #     XLSX.writetable!(xf[2], columns, labels, anchor_cell=XLSX.CellRef("B2"))
+    # end
+
+    #########################################################################
+    num_actions = length(actions)
+
+    rows = [i for i = 2:22:(22*num_actions)]
+    XLSX.openxlsx(filename, mode="w") do xf
+        sheet = xf[1]
+        for a in eachindex(actions)
+            sheet["B" * string(rows[a])] = "Action: " * actions[a]
+            sheet["C" * string(rows[a]+1)] = states   # add states to row; equivalent to `sheet[cell index, dim=2]
+            sheet["B" * string(rows[a]+2), dim=1] = states   # add states to column
+            sheet["C" * string(rows[a]+2) * ":" * "T" * string(rows[a]+1+18)] = R[a,:,:]
+        end
+    end
+end
+
+
