@@ -3,10 +3,16 @@ import pandas as pd
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.linear_model import LinearRegression, BayesianRidge
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.neighbors import KNeighborsRegressor
 
-df_init = pd.read_excel("MDASI-v3.xlsx") #, sheet_name="Sheet1" , usecols="A:AL")
+# df_init = pd.read_excel("MDASI-v3.xlsx")
+# rows_dropped = "none"
+
 # df_init = pd.read_excel("MDASI-v3-removeNoMDASI.xlsx")
-# df_init = pd.read_excel("df_Fatemeh_merged_ananomyzed_06102023.xlsx", sheet_name="Scores_and_demographics", usecols="A:AL")
+# rows_dropped = "blanks"
+
+# df_init = pd.read_excel("df_Fatemeh_merged_ananomyzed_06102023.xlsx", sheet_name="Scores_and_demographics")
 
 col_names = [
 "Gender", "HPV/P16 (1= positive, 0=negative, NA=unknown)", "Age", "Smoking", "Alcohol", "Drugs",
@@ -38,39 +44,105 @@ col_names = [
 "mdasi_voice_baseline", "mdasi_voice_end_of_xrt", "mdasi_voice_start_of_xrt", "mdasi_voice_week_2", "mdasi_voice_week_3", "mdasi_voice_week_4", "mdasi_voice_week_5", "mdasi_voice_week_6",
 "mdasi_vomit_baseline", "mdasi_vomit_end_of_xrt", "mdasi_vomit_start_of_xrt", "mdasi_vomit_week_2", "mdasi_vomit_week_3", "mdasi_vomit_week_4", "mdasi_vomit_week_5", "mdasi_vomit_week_6"
 ]
-df = df_init[col_names]
+# df = df_init[col_names]
 # df = df.iloc[:,0:38]
 # print(list(df.columns))
 
-df = df.replace("NA", np.nan)
+# df = df.replace("NA", np.nan)
 # print(df)
 
-# lr = LinearRegression()
+# ### Initiate imputer with estimator
+# # lr = LinearRegression()
+# # imp = IterativeImputer(missing_values=np.nan, max_iter=100, verbose=2, imputation_order='ascending',
+# #                        random_state=0, estimator=lr, min_value=0, max_value=10)  # default estimator is BayesianRidge()
+# # method = "LR"
+
+# br = BayesianRidge()
 # imp = IterativeImputer(missing_values=np.nan, max_iter=100, verbose=2, imputation_order='ascending',
-#                        random_state=0, estimator=lr, min_value=0, max_value=10)  # default estimator is BayesianRidge()
+#                        random_state=0, estimator=br, min_value=0, max_value=10)  # default estimator is BayesianRidge()
+# # method = "BR"
 
-br = BayesianRidge()
-imp = IterativeImputer(missing_values=np.nan, max_iter=100, verbose=2, imputation_order='ascending',
-                       random_state=0, estimator=br, min_value=0, max_value=10)  # default estimator is BayesianRidge()
+# df_array = imp.fit_transform(df)
+# # print(df_array.size)
+# # print(df_array)
 
-df_array = imp.fit_transform(df)
-# print(df_array.size)
-# print(df_array)
+# ### Convert to a DataFrame
+# df_final = pd.DataFrame(data = df_array, index = range(df_array.shape[0]), columns=df.columns)
+# df_final = df_final.round(decimals=0)
+# df_final = df_final.astype(int)
+# # Fix data
+# df_final["Gender"] = df_final["Gender"].replace([2,3,4,5,6,7,8,9,10], 1)
+# df_final["HPV/P16 (1= positive, 0=negative, NA=unknown)"] = df_final["HPV/P16 (1= positive, 0=negative, NA=unknown)"].replace([2,3,4,5,6,7,8,9,10], 1)
+# df_final["Age"] = df_final["Age"].replace([2,3,4,5,6,7,8,9,10], 1)
+# df_final["Smoking"] = df_final["Smoking"].replace([3,4,5,6,7,8,9,10], 2)
+# df_final["Drugs"] = df_final["Drugs"].replace([2,3,4,5,6,7,8,9,10], 1)
+# # convert_dict = {"Column name": int, "Column name": int,"Pain_score_W2": int}
+# # df_final = df_final.astype(convert_dict)
+# print(df_final)
 
-df_final = pd.DataFrame(data = df_array, index = range(df_array.shape[0]), columns=df.columns)
-df_final = df_final.round(decimals=0)
-df_final = df_final.astype(int)
-df_final["Gender"] = df_final["Gender"].replace([2,3,4,5,6,7,8,9,10], 1)
-df_final["HPV/P16 (1= positive, 0=negative, NA=unknown)"] = df_final["HPV/P16 (1= positive, 0=negative, NA=unknown)"].replace([2,3,4,5,6,7,8,9,10], 1)
-df_final["Age"] = df_final["Age"].replace([2,3,4,5,6,7,8,9,10], 1)
-df_final["Smoking"] = df_final["Smoking"].replace([3,4,5,6,7,8,9,10], 2)
-df_final["Drugs"] = df_final["Drugs"].replace([2,3,4,5,6,7,8,9,10], 1)
-# convert_dict = {"Column name": int, "Column name": int,"Pain_score_W2": int}
-# df_final = df_final.astype(convert_dict)
-print(df_final)
+# ### Save to excel files (using 100 iterations and 'ascending' imputation order)
+# df_final.to_excel(f"MDASI imputed {method} {rows_dropped} dropped.xlsx", index=False, float_format="%.1f", sheet_name="MDASI scores")
+# # df_final.to_excel("MDASI imputed LR none dropped.xlsx", index=False, float_format="%.1f", sheet_name="MDASI scores")
+# # df_final.to_excel("MDASI imputed LR blanks dropped.xlsx", index=False, float_format="%.1f", sheet_name="MDASI scores")
+# df_final.to_excel("MDASI imputed BR none dropped.xlsx", index=False, float_format="%.1f", sheet_name="MDASI scores")
+# # df_final.to_excel("MDASI imputed BR blanks dropped.xlsx", index=False, float_format="%.1f", sheet_name="MDASI scores")
 
-# Save to excel files (using 100 iterations and 'ascending' imputation order)
-# df_final.to_excel("MDASI imputed LR none dropped.xlsx", index=False, float_format="%.1f", sheet_name="MDASI scores")
-# df_final.to_excel("MDASI imputed LR blanks dropped.xlsx", index=False, float_format="%.1f", sheet_name="MDASI scores")
-df_final.to_excel("MDASI imputed BR none dropped.xlsx", index=False, float_format="%.1f", sheet_name="MDASI scores")
-# df_final.to_excel("MDASI imputed BR blanks dropped.xlsx", index=False, float_format="%.1f", sheet_name="MDASI scores")
+
+##########################################################################
+##########################################################################
+filenames = ["MDASI-v3.xlsx", "MDASI-v3-removeNoMDASI.xlsx"]
+rows_dropped = ["none", "blanks"]
+
+# df_init = pd.read_excel("MDASI-v3-removeNoMDASI.xlsx")
+# dropped = "blanks"
+
+# Execute in for loop
+estimators = [
+    # BayesianRidge(),
+    # LinearRegression(),
+    RandomForestRegressor(
+        n_estimators=50,  # default 100
+        # max_depth=10,
+        # bootstrap=True,
+        # max_samples=0.5,
+        # n_jobs=2,
+        random_state=0,
+    ),
+    # KNeighborsRegressor(n_neighbors=15),
+]
+
+methods = [
+    # "LR",
+    # "BR",
+    "RF",
+    # "KNN"
+    ]
+
+num_iterations = [
+    # 100,
+    # 100,
+    25,
+    # 100
+    ]
+
+for file, rd in zip(filenames, rows_dropped):
+    df_init = pd.read_excel(file)
+    df = df_init[col_names]
+    df = df.replace("NA", np.nan)
+
+    for impute_estimator, method, num_iter in zip(estimators, methods, num_iterations):
+        imp = IterativeImputer(missing_values=np.nan, max_iter=num_iter, verbose=2, imputation_order='ascending',
+                        random_state=0, estimator=impute_estimator, min_value=0, max_value=10)
+        df_array = imp.fit_transform(df)
+
+        df_final = pd.DataFrame(data = df_array, index = range(df_array.shape[0]), columns=df.columns)
+        df_final = df_final.round(decimals=0)
+        df_final = df_final.astype(int)
+        
+        df_final["Gender"] = df_final["Gender"].replace([2,3,4,5,6,7,8,9,10], 1)
+        df_final["HPV/P16 (1= positive, 0=negative, NA=unknown)"] = df_final["HPV/P16 (1= positive, 0=negative, NA=unknown)"].replace([2,3,4,5,6,7,8,9,10], 1)
+        df_final["Age"] = df_final["Age"].replace([2,3,4,5,6,7,8,9,10], 1)
+        df_final["Smoking"] = df_final["Smoking"].replace([3,4,5,6,7,8,9,10], 2)
+        df_final["Drugs"] = df_final["Drugs"].replace([2,3,4,5,6,7,8,9,10], 1)
+
+        df_final.to_excel(f"MDASI imputed {method} {rd} dropped.xlsx", index=False, float_format="%.1f", sheet_name="MDASI scores")
