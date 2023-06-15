@@ -5,6 +5,7 @@ from sklearn.impute import IterativeImputer
 from sklearn.linear_model import LinearRegression, BayesianRidge
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neighbors import KNeighborsRegressor
+from sklearn.svm import SVR
 
 df_init = pd.read_excel("MDASI-v3.xlsx")
 rows_dropped = "none"
@@ -65,11 +66,17 @@ df = df.replace("NA", np.nan)
 ### Initiate imputer with estimator
 # estimator = LinearRegression()
 # method = "LR"
-#
-estimator = BayesianRidge()  # default
-method = "BR"
 
-imp = IterativeImputer(missing_values=np.nan, max_iter=100, verbose=2, imputation_order='ascending',
+# estimator = BayesianRidge()  # default
+# method = "BR"
+
+# kernel = "rbf"  # stopping criteria reached in 14 iter
+kernel = "linear"
+estimator = SVR(kernel=kernel)
+method = f"SVR kernel {kernel}"
+
+num_iter = 100
+imp = IterativeImputer(missing_values=np.nan, max_iter=num_iter, verbose=2, imputation_order='ascending',
                        random_state=0, estimator=estimator, min_value=0, max_value=10)
 
 df_array = imp.fit_transform(df)
@@ -84,7 +91,7 @@ df_final = df_final.round(decimals=0).astype(int)
 df_final["Gender"] = df_final["Gender"].replace([2,3,4,5,6,7,8,9,10], 1)
 df_final["HPV/P16 (1= positive, 0=negative, NA=unknown)"] = df_final["HPV/P16 (1= positive, 0=negative, NA=unknown)"].replace([2,3,4,5,6,7,8,9,10], 1)
 df_final["Age"] = df_final["Age"].replace([2,3,4,5,6,7,8,9,10], 1)
-df_final["Smoking"] = df_final["Smoking"].replace([3,4,5,6,7,8,9,10], 2)
+df_final["Smoking"] = df_final["Smoking"].replace([3,4,5,6,7,8,9,10], 2)  # 0 never, 1 former, 2 current
 df_final["Drugs"] = df_final["Drugs"].replace([2,3,4,5,6,7,8,9,10], 1)
 ### Add score_all columns
 for time_period in time_periods:
@@ -96,77 +103,77 @@ for time_period in time_periods:
 # # df_final = df_final.astype(convert_dict)
 # print(df_final)
 
-# ### Save to excel files (using 100 iterations and 'ascending' imputation order)
-df_final.to_excel(f"MDASI test imputed {method} {rows_dropped} dropped.xlsx", index=False, float_format="%.4f", sheet_name="MDASI scores")
+### Save to excel files (using 100 iterations and 'ascending' imputation order)
+df_final.to_excel(f"MDASI imputed {method} {rows_dropped} dropped.xlsx", index=False, float_format="%.4f", sheet_name="MDASI scores")
 
 
 # ##########################################################################
 # ##########################################################################
-filenames = [
-    "MDASI-v3.xlsx", 
-    "MDASI-v3-removeNoMDASI.xlsx"
-    ]
-rows_dropped = [
-    "none", 
-    "blanks"
-    ]
+# filenames = [
+#     "MDASI-v3.xlsx", 
+#     "MDASI-v3-removeNoMDASI.xlsx"
+#     ]
+# rows_dropped = [
+#     "none", 
+#     "blanks"
+#     ]
 
-# df_init = pd.read_excel("MDASI-v3-removeNoMDASI.xlsx")
-# dropped = "blanks"
+# # df_init = pd.read_excel("MDASI-v3-removeNoMDASI.xlsx")
+# # dropped = "blanks"
 
-# Execute in for loop
-estimators = [
-    # BayesianRidge(),
-    # LinearRegression(),
-    RandomForestRegressor(
-        n_estimators=50,  # default 100
-        # max_depth=10,
-        # bootstrap=True,
-        # max_samples=0.5,
-        # n_jobs=2,
-        random_state=0,
-    ),
-    # KNeighborsRegressor(n_neighbors=15),
-]
+# # Execute in for loop
+# estimators = [
+#     # BayesianRidge(),
+#     # LinearRegression(),
+#     RandomForestRegressor(
+#         n_estimators=50,  # default 100
+#         # max_depth=10,
+#         # bootstrap=True,
+#         # max_samples=0.5,
+#         # n_jobs=2,
+#         random_state=0,
+#     ),
+#     # KNeighborsRegressor(n_neighbors=15),
+# ]
 
-methods = [
-    # "LR",
-    # "BR",
-    "RF",
-    # "KNN"
-    ]
+# methods = [
+#     # "LR",
+#     # "BR",
+#     "RF",
+#     # "KNN"
+#     ]
 
-num_iterations = [
-    # 100,
-    # 100,
-    25,
-    # 100
-    ]
+# num_iterations = [
+#     # 100,
+#     # 100,
+#     25,
+#     # 100
+#     ]
 
-for file, rd in zip(filenames, rows_dropped):
-    df_init = pd.read_excel(file)
-    df = df_init[col_names]
-    df = df.replace("NA", np.nan)
+# for file, rd in zip(filenames, rows_dropped):
+#     df_init = pd.read_excel(file)
+#     df = df_init[col_names]
+#     df = df.replace("NA", np.nan)
 
-    for impute_estimator, method, num_iter in zip(estimators, methods, num_iterations):
-        imp = IterativeImputer(missing_values=np.nan, max_iter=num_iter, verbose=2, imputation_order='ascending',
-                                random_state=0, estimator=impute_estimator, min_value=0, max_value=10)
-        df_array = imp.fit_transform(df)
+#     for impute_estimator, method, num_iter in zip(estimators, methods, num_iterations):
+#         imp = IterativeImputer(missing_values=np.nan, max_iter=num_iter, verbose=2, imputation_order='ascending',
+#                                 random_state=0, estimator=impute_estimator, min_value=0, max_value=10)
+#         df_array = imp.fit_transform(df)
 
-        df_final = pd.DataFrame(data = df_array, index = range(df_array.shape[0]), columns=df.columns)
-        df_final = df_final.round(decimals=0).astype(int)
+#         df_final = pd.DataFrame(data = df_array, index = range(df_array.shape[0]), columns=df.columns)
+#         df_final = df_final.round(decimals=0).astype(int)
         
-        ### Fix data
-        df_final["Gender"] = df_final["Gender"].replace([2,3,4,5,6,7,8,9,10], 1)
-        df_final["HPV/P16 (1= positive, 0=negative, NA=unknown)"] = df_final["HPV/P16 (1= positive, 0=negative, NA=unknown)"].replace([2,3,4,5,6,7,8,9,10], 1)
-        df_final["Age"] = df_final["Age"].replace([2,3,4,5,6,7,8,9,10], 1)
-        df_final["Smoking"] = df_final["Smoking"].replace([3,4,5,6,7,8,9,10], 2)
-        df_final["Drugs"] = df_final["Drugs"].replace([2,3,4,5,6,7,8,9,10], 1)
+#         ### Fix data
+#         df_final["Gender"] = df_final["Gender"].replace([2,3,4,5,6,7,8,9,10], 1)
+#         df_final["HPV/P16 (1= positive, 0=negative, NA=unknown)"] = df_final["HPV/P16 (1= positive, 0=negative, NA=unknown)"].replace([2,3,4,5,6,7,8,9,10], 1)
+#         df_final["Age"] = df_final["Age"].replace([2,3,4,5,6,7,8,9,10], 1)
+#         df_final["Smoking"] = df_final["Smoking"].replace([3,4,5,6,7,8,9,10], 2)
+#         df_final["Drugs"] = df_final["Drugs"].replace([2,3,4,5,6,7,8,9,10], 1)
 
-        ### Add score_all columns
-        for time_period in time_periods:
-                symptom_cols = [f"mdasi_{symptom}_{time_period}" for symptom in symptoms]
-                df_final[f"mdasi_score_all_{time_period}"] = df_final[symptom_cols].sum(axis=1) / len(symptom_cols)
+#         ### Add score_all columns
+#         for time_period in time_periods:
+#                 symptom_cols = [f"mdasi_{symptom}_{time_period}" for symptom in symptoms]
+#                 df_final[f"mdasi_score_all_{time_period}"] = df_final[symptom_cols].sum(axis=1) / len(symptom_cols)
 
-        ### Save to spreadsheet
-        df_final.to_excel(f"MDASI imputed {method} {rd} dropped.xlsx", index=False, float_format="%.4f", sheet_name="MDASI scores")
+#         ### Save to spreadsheet
+#         df_final.to_excel(f"MDASI imputed {method} {rd} dropped.xlsx", index=False, float_format="%.4f", sheet_name="MDASI scores")
