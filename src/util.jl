@@ -3,7 +3,8 @@ Helper/utility functions.
 """
 
 using XLSX
-
+using DataFrames
+using Pipe
 
 function compute_reachable_states(current_state::Int, action::Int, P)
     # Returns indices of reachable states
@@ -169,3 +170,27 @@ function write_R(R, states, actions, filename)
 end
 
 
+function load_R(states, actions, action_sets, T)
+    num_states = length(states)
+    num_actions = length(actions)
+    R = zeros(T, num_states, num_actions)
+
+    # Read in for one time period
+    for t = 1:T
+        data_xlsx = XLSX.readxlsx("Rewards imputed LR week $t order ascending.xlsx")
+        sheet = data_xlsx["Rewards"]
+
+        col_names = ["$i" for i = 1:3]
+        df = @pipe DataFrame(sheet["A2:C19"], col_names) |> convert.(Float64, _)
+        mat =  Matrix(df)
+        mat = mat[:, end:-1:1]
+
+        for i = 1:num_states
+            for a in eachindex(action_sets[i])
+                R[t,i,action_sets[i][a]] = copy(mat[i,a])
+            end
+        end
+    end
+
+    return R
+end

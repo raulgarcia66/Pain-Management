@@ -19,7 +19,7 @@ df_orig = @pipe DataFrame(sheet["V22:AM39"], col_names) |> convert.(Float64, _)
 df_counts = @pipe DataFrame(sheet["V2:AM19"], col_names) |> convert.(Int, _)
 
 ##### Horizon
-T = 7   # num decision epochs (⟹ horizon is T+1)
+T = 6   # num decision epochs (⟹ horizon is T+1)
 
 
 ##### States
@@ -36,7 +36,7 @@ num_actions = length(actions)
 
 action_sets = [(1,2,3), (1,2,3), (1,2,3), (1,2,3), (1,2,3), (1,2,3),
               (2,3,4), (2,3,4), (2,3,4), (2,3,4), (2,3,4), (2,3,4),
-              (3,4,5), (3,4,5), (3,4,5), (3,4,5), (3,4,5), (3,4,5)]
+              (3,4,5), (3,4,5), (3,4,5), (3,4,5), (3,4,5), (3,5)]
 action_sets[1]
 # action_sets[i] is the indices of the actions that state i can take
 
