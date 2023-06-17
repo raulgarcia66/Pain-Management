@@ -7,10 +7,12 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.svm import SVR
 
+rows_dropped = "none"  # ["none", "blanks"]
+method = "BR"  # ["LR", "BR", "RF" "KNN", "SVR kernel linear", "SVR kernel rbf"]
 week = 6
-df_init = pd.read_excel(f"Reward_SAT_W{week}.xlsx")
-df = df_init.iloc[:-2]
-df.drop(columns=df_init.columns[0], axis=1, inplace=True)
+df_init = pd.read_excel(f"Reward_SAT_{method}_{rows_dropped}_dropped_W{week}.xlsx")
+df = df_init.iloc[:-2]  # drop last 2 rows picked up
+df.drop(columns=df_init.columns[0], axis=1, inplace=True)  # drop first column (states)
 # print(df_init)
 # print(df_init.columns)
 
@@ -18,11 +20,11 @@ df.drop(columns=df_init.columns[0], axis=1, inplace=True)
 # df = df_init[col_names]
 
 ### Initiate imputer with estimator
-estimator = LinearRegression()
-method = "LR"
+# estimator = LinearRegression()
+# method = "LR"
 
-# estimator = BayesianRidge()  # default
-# method = "BR"
+estimator = BayesianRidge()  # default
+method = "BR"
 
 # kernel = "rbf"  # stopping criteria reached in 14 iter
 # kernel = "linear"
@@ -42,4 +44,4 @@ df_array = imp.fit_transform(df)
 df_final = pd.DataFrame(data = df_array, index = range(df_array.shape[0]), columns=df.columns)
 
 # ### Save to excel files (using 100 iterations and 'ascending' imputation order)
-df_final.to_excel(f"Rewards imputed {method} week {week} order {order}.xlsx", index=False, sheet_name="Rewards") # float_format="%.4f"
+df_final.to_excel(f"Rewards imputed {method} order {order} {rows_dropped} dropped week {week}.xlsx", index=False, sheet_name="Rewards") # float_format="%.4f"

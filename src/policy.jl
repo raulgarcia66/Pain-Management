@@ -33,7 +33,6 @@ include("./parameters.jl")
 #     R = construct_R_state_occupation(states, actions, action_sets, P, α, state_health_partition, state_pain_partition, 
 #                     functionality_values, pain_level_values, action_penalty)
 # end
-R = load_R(states, actions, action_sets, T)
 
 # write_R(R, states, actions, "Rewards transition.xlsx")
 # write_R(R, states, actions, "Rewards state occupation.xlsx")
@@ -65,38 +64,97 @@ R = load_R(states, actions, action_sets, T)
 # π[1][1]
 # π_mult[1][1]
 
-u, π = compute_policy_time(states, actions, action_sets, R, P, T)
+# local_file_names = String[]
+# push!(local_file_names, "Experiment summary.txt")
+# push!(local_file_names, "Experiment and policy summary.txt")
+# push!(local_file_names, "Policy $exp_count.txt")
+# for filename in local_file_names
+#     if filename == "Policy $exp_count.txt"
+#         f = open(filename, "w")
+#     else
+#         f = open(filename, "a")
+#     end
 
-### Logging
+#     write(f, "Experiment $exp_count\n")
+#     if rewards_transition
+#         write(f, "Rewards coupled with transitioning.\n")
+#     else
+#         write(f, "Rewards for state occupation each period.\n")
+#     end
+#     if using_orig_matrix
+#         write(f, "Using original matrix.\n")
+#     end
+#     write(f, "u_terminal = $u_terminal\n")
+#     write(f, "term_reward_func = $term_reward_func   # Poor, Acceptable, Good\n")
+#     write(f, "term_reward_pain_sev = $term_reward_pain_sev   # MM, MS\n")
+#     write(f, "functionality_values = $functionality_values   # Poor, Acceptable, Good\n")
+#     write(f, "pain_level_values = $pain_level_values   # MM, MS\n")
+#     write(f, "α = $α   # Penalty of -α if action is + 2, 0 o.w.\n")
+#     if length(opt_acts_mult) > 0
+#         write(f, "Multiple optimal actions at: $opt_acts_mult\n")
+#     end
+#     write(f, "Total expected reward u = $(u[1])\n")
+#     write(f, "\n")
 
-exp_count = 1
+#     if filename == "Experiment summary.txt"
+#         close(f)
+#     else
+#         # Policy
+#         write(f, "\tT\t\t")
+#         for t = 1:T
+#             write(f, "$t\t\t")
+#         end
+#         write(f, "\n")
+#         for i in eachindex(states)
+#             write(f, "$(states[i])\t")
+#             for t in 1:T
+#                 write(f, "$(actions[π[t][i]])\t\t")
+#             end
+#             write(f, "\n")
+#         end
+#         write(f, "\n")
+#         close(f)
+#     end
+# end
+
+##############################################################################
+rows_dropped = "none"
+method = "LR"
+order = "ascending"
+
+#### Rewards
+filename_no_week_no_ext = "Rewards imputed $method order $order $rows_dropped dropped"
+R = load_R(states, actions, action_sets, filename_no_week_no_ext, T)
+
+#### Compute policy
+u, π = compute_policy_time_dep_rewards(states, actions, action_sets, R, P, T)
+
+# t = 1; i = 5;
+# u[t][i]
+# π[t][i]
+# actions[π[t][i]]
+
+# policy_matrix = hcat(map(t -> actions[π[t]], 1:T)...)
+
+#### Logging
 
 local_file_names = String[]
 # push!(local_file_names, "Experiment summary.txt")
 # push!(local_file_names, "Experiment and policy summary.txt")
-push!(local_file_names, "Policy $exp_count.txt")
+push!(local_file_names, "Policy $method order $order $rows_dropped dropped.txt")
 for filename in local_file_names
-    if filename == "Policy $exp_count.txt"
-        f = open(filename, "w")
-    else
-        f = open(filename, "a")
-    end
-
-    write(f, "Experiment $exp_count\n")
-    # if rewards_transition
-    #     write(f, "Rewards coupled with transitioning.\n")
+    # if filename == "Policy $exp_count.txt"
+    #     f = open(filename, "w")
     # else
-    #     write(f, "Rewards for state occupation each period.\n")
+    #     f = open(filename, "a")
     # end
+    f = open(filename, "w")
+
+    write(f, "Method: $method\nOrder: $order\nRows dropped: $rows_dropped\n")
     # if using_orig_matrix
     #     write(f, "Using original matrix.\n")
     # end
     # write(f, "u_terminal = $u_terminal\n")
-    # write(f, "term_reward_func = $term_reward_func   # Poor, Acceptable, Good\n")
-    # write(f, "term_reward_pain_sev = $term_reward_pain_sev   # MM, MS\n")
-    # write(f, "functionality_values = $functionality_values   # Poor, Acceptable, Good\n")
-    # write(f, "pain_level_values = $pain_level_values   # MM, MS\n")
-    # write(f, "α = $α   # Penalty of -α if action is + 2, 0 o.w.\n")
     # if length(opt_acts_mult) > 0
     #     write(f, "Multiple optimal actions at: $opt_acts_mult\n")
     # end

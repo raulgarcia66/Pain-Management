@@ -36,7 +36,7 @@ num_actions = length(actions)
 
 action_sets = [(1,2,3), (1,2,3), (1,2,3), (1,2,3), (1,2,3), (1,2,3),
               (2,3,4), (2,3,4), (2,3,4), (2,3,4), (2,3,4), (2,3,4),
-              (3,4,5), (3,4,5), (3,4,5), (3,4,5), (3,4,5), (3,5)]
+              (3,4,5), (3,4,5), (3,4,5), (3,4,5), (3,4,5), (3,5)]  # state 18 modified
 action_sets[1]
 # action_sets[i] is the indices of the actions that state i can take
 
