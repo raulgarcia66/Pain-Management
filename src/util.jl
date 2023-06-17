@@ -170,14 +170,14 @@ function write_R(R, states, actions, filename)
 end
 
 
-function load_R(states, actions, action_sets, T)
+function load_R(states, actions, action_sets, filename_no_week_no_ext, T)
     num_states = length(states)
     num_actions = length(actions)
     R = zeros(T, num_states, num_actions)
 
     # Read in for one time period
     for t = 1:T
-        data_xlsx = XLSX.readxlsx("Rewards imputed LR week $t order ascending.xlsx")
+        data_xlsx = XLSX.readxlsx(filename_no_week_no_ext * " week $t.xlsx")
         sheet = data_xlsx["Rewards"]
 
         col_names = ["$i" for i = 1:3]

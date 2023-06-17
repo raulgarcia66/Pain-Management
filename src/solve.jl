@@ -29,7 +29,7 @@ function compute_policy(states, actions, action_sets, R, P, T; u_terminal=zeros(
     return u, π
 end
 
-function compute_policy_time(states, actions, action_sets, R, P, T; u_terminal=zeros(length(states)))
+function compute_policy_time_dep_rewards(states, actions, action_sets, R, P, T; u_terminal=zeros(length(states)))
     # Compute policy via value iteration
     num_states = length(states)
 
