@@ -1,7 +1,6 @@
 """
 Helper/utility functions.
 """
-
 using XLSX
 using DataFrames
 using Pipe
@@ -12,12 +11,10 @@ function compute_reachable_states(current_state::Int, action::Int, P)
     return filter(j -> P[action][current_state, j] > ϵ, 1:size(P[action],2))
 end
 
-
 function compute_reachable_states_vector(states, actions, P)
     # Returns vector X, where X[a][i] is the indices of states reachable to i after taking action a
     return map(a -> map(i ->  compute_reachable_states(i, a, P), eachindex(states)), eachindex(actions))
 end
-
 
 function gen_next_state(current_state::Int, action::Int, P)
     U = rand()
@@ -42,12 +39,12 @@ function find_list_index(state::Int, lists::Vector{Vector{Int}})
     error("Current state $i not found in state_health_partition")
 end
 
-
 """
 Rewards are received for when a transition from one state to another occurs.
 """
 function construct_R_transition(states, actions, action_sets, P, α, state_health_partition, state_pain_partition, 
                     functionality_values, pain_level_values, action_penalty)
+    # R(a,i,j) is dimension num_actions × num_states × num_states
     num_states = length(states); num_actions = length(actions);
     reachable_states = compute_reachable_states_vector(states, actions, P)   # reachable_states[a][i] is indices of states reachable to i after taking action a
     R = zeros(num_actions, num_states, num_states)
@@ -82,6 +79,7 @@ end
 Rewards are received every period depending on the state one occupies.
 """
 function construct_R_state_occupation(states, actions, action_sets, P, α, state_health_partition, state_pain_partition, 
+    # R(a,i,j) is dimension num_actions × num_states × num_states
     functionality_values, pain_level_values, action_penalty)
     num_states = length(states); num_actions = length(actions);
     reachable_states = compute_reachable_states_vector(states, actions, P)   # reachable_states[a][i] is indices of states reachable to i after taking action a
@@ -112,8 +110,10 @@ function construct_R_state_occupation(states, actions, action_sets, P, α, state
     return R
 end
 
-
-function write_R(R, states, actions, filename)
+"""
+DESCRIPTION.
+"""
+function write_R(R::Array{2, T}, states, actions, filename) where T
     ### Example 1
     # XLSX.openxlsx("my_new_file.xlsx", mode="w") do xf
     #     sheet = xf[1]
@@ -155,6 +155,7 @@ function write_R(R, states, actions, filename)
     # end
 
     #########################################################################
+    # R(a,i,j) is dimension num_actions × num_states × num_states
     num_actions = length(actions)
 
     rows = [i for i = 2:22:(22*num_actions)]
@@ -169,11 +170,13 @@ function write_R(R, states, actions, filename)
     end
 end
 
-
+"""
+DESCRIPTION.
+"""
 function load_R(states, actions, action_sets, filename_no_week_no_ext, T)
     num_states = length(states)
     num_actions = length(actions)
-    R = zeros(T, num_states, num_actions)
+    R = zeros(T, num_states, num_actions) # R_t(i,a)
 
     # Read in for one time period
     for t = 1:T
