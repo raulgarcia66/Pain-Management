@@ -1,12 +1,10 @@
 """
 Compute parameters for pain management MDP framework.
 """
-
 using XLSX
 using DataFrames
 using Pipe
 include("./util.jl")
-include("./solve.jl")
 
 # Load data
 data_xlsx = XLSX.readxlsx("patients-states.xlsx")
@@ -25,7 +23,7 @@ T = 6   # num decision epochs (⟹ horizon is T+1)
 ##### States
 states = ["[0,P,MM]", "[0,A,MM]", "[0,G,MM]", "[0,P,MS]", "[0,A,MS]", "[0,G,MS]",
     "[1,P,MM]", "[1,A,MM]", "[1,G,MM]", "[1,P,MS]", "[1,A,MS]", "[1,G,MS]",
-    "[2,P,MM]", "[2,A,MM]", "[2,G,MM]", "[2,P,MS]", "[2,A,MS]", "[2,G,MS]" ]
+    "[2,P,MM]", "[2,A,MM]", "[2,G,MM]", "[2,P,MS]", "[2,A,MS]", "[2,G,MS]"]
 num_states = length(states)
 # state_map = Dict([i => state_desc[i] for i = 1:18])
 
