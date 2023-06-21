@@ -8,7 +8,7 @@ include("./util.jl")
 
 function compute_policy(states, actions, action_sets, R::Array{W,3}, P, T; u_terminal=zeros(length(states))) where W
     # Compute policy via value iteration
-    # R(a,i,j) is dimension num_actions × num_states × num_states
+    # R[a,i,j] is dimension num_actions × num_states × num_states
     num_states = length(states)
 
     π = [zeros(Int, num_states) for _ in 1:T]   # policy via action indices
@@ -33,11 +33,11 @@ end
 
 function compute_policy_mult_actions(states, actions, action_sets::Vector{V}, R::Array{W,3}, P, T; u_terminal=zeros(length(states))) where {V,W}
     # Compute policy via value iteration
-    # R(a,i,j) is dimension num_actions × num_states × num_states
+    # R[a,i,j] is dimension num_actions × num_states × num_states
     num_states = length(states)
 
     # Policy via action indices
-    if W <: Tuple
+    if V <: Tuple
         π = [[(0,) for _ in 1:num_states] for _ in 1:T]
     else
         π = [[[0] for _ in 1:num_states] for _ in 1:T]
@@ -69,10 +69,9 @@ function compute_policy_mult_actions(states, actions, action_sets::Vector{V}, R:
     return u, π, optimal_actions
 end
 
-# compute_policy_time_dep_rewards
 function compute_policy(states, actions, action_sets, R::Vector{Array{W,2}}, P, T; u_terminal=zeros(length(states))) where W
     # Compute policy via value iteration
-    # R(t,i,a) is dimension time_period × num_states × num_actions
+    # R[t][i,a]
     num_states = length(states)
 
     π = [zeros(Int, num_states) for _ in 1:T]   # policy via action indices
@@ -84,7 +83,7 @@ function compute_policy(states, actions, action_sets, R::Vector{Array{W,2}}, P, 
     for t = T:-1:1
         for i in eachindex(states)
 
-            u_temp = map(a -> R[t,i,a] + sum([ P[a][i,j] * u[t+1][j] for j in reachable_states[a][i] ]), action_sets[i])
+            u_temp = map(a -> R[t][i,a] + sum([ P[a][i,j] * u[t+1][j] for j in reachable_states[a][i] ]), action_sets[i])
             u[t][i] = maximum(u_temp)
 
             π[t][i] = @pipe findfirst(==(u[t][i]), u_temp) |> action_sets[i][_]

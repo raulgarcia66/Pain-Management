@@ -45,8 +45,9 @@ Rewards are received for when a transition from one state to another occurs.
 """
 function construct_R_transition(states, actions, action_sets, P, α, state_health_partition, state_pain_partition, 
                     functionality_values, pain_level_values, action_penalty)
-    # R(a,i,j) is dimension num_actions × num_states × num_states
-    num_states = length(states); num_actions = length(actions);
+    # R[a,i,j] is dimension num_actions × num_states × num_states
+    num_states = length(states)
+    num_actions = length(actions)
     reachable_states = compute_reachable_states_vector(states, actions, P)   # reachable_states[a][i] is indices of states reachable to i after taking action a
     R = zeros(num_actions, num_states, num_states)
     
@@ -80,9 +81,10 @@ end
 Rewards are received every period depending on the state one occupies.
 """
 function construct_R_state_occupation(states, actions, action_sets, P, α, state_health_partition, state_pain_partition, 
-    # R(a,i,j) is dimension num_actions × num_states × num_states
-    functionality_values, pain_level_values, action_penalty)
-    num_states = length(states); num_actions = length(actions);
+                                    functionality_values, pain_level_values, action_penalty)
+    # R[a,i,j] is dimension num_actions × num_states × num_states
+    num_states = length(states)
+    num_actions = length(actions)
     reachable_states = compute_reachable_states_vector(states, actions, P)   # reachable_states[a][i] is indices of states reachable to i after taking action a
     R = zeros(num_actions, num_states, num_states)
 
@@ -156,7 +158,7 @@ function write_R(R::Array{W,3}, states, actions, filename) where W
     # end
 
     #########################################################################
-    # R(a,i,j) is dimension num_actions × num_states × num_states
+    # R[a,i,j] is dimension num_actions × num_states × num_states
     num_actions = length(actions)
 
     rows = [i for i = 2:22:(22*num_actions)]
@@ -196,7 +198,7 @@ DESCRIPTION.
 function load_R(states, actions, action_sets, filename_no_week_no_ext, T::Int)
     num_states = length(states)
     num_actions = length(actions)
-    R = zeros(T, num_states, num_actions) # R_t(i,a)
+    R = [zeros(num_states, num_actions) for _ in 1:T]
 
     # Read in for one time period
     for t = 1:T
@@ -210,7 +212,7 @@ function load_R(states, actions, action_sets, filename_no_week_no_ext, T::Int)
 
         for i = 1:num_states
             for a in eachindex(action_sets[i])
-                R[t,i,action_sets[i][a]] = copy(mat[i,a])
+                R[t][i,action_sets[i][a]] = copy(mat[i,a])
             end
         end
     end

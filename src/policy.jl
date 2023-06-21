@@ -15,7 +15,7 @@ filename_no_week_no_ext = "Rewards imputed $method order $order $rows_dropped dr
 R = load_R(states, actions, action_sets, filename_no_week_no_ext, T)
 
 #### Compute policy
-u, π = compute_policy_time_dep_rewards(states, actions, action_sets, R, P, T)
+u, π = compute_policy(states, actions, action_sets, R, P, T)
 
 # t = 1
 # i = 5
