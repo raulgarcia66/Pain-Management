@@ -1,6 +1,7 @@
 """
 Helper/utility functions.
 """
+
 using XLSX
 using DataFrames
 using Pipe
@@ -113,7 +114,7 @@ end
 """
 DESCRIPTION.
 """
-function write_R(R::Array{2, T}, states, actions, filename) where T
+function write_R(R::Array{W,3}, states, actions, filename) where W
     ### Example 1
     # XLSX.openxlsx("my_new_file.xlsx", mode="w") do xf
     #     sheet = xf[1]
@@ -173,7 +174,26 @@ end
 """
 DESCRIPTION.
 """
-function load_R(states, actions, action_sets, filename_no_week_no_ext, T)
+function write_R(R::Vector{Array{W,2}}, states, actions, filename) where W
+    # R[t][i,a]
+    num_actions = length(actions)
+
+    rows = [i for i = 2:22:(22*num_actions)]
+    # XLSX.openxlsx(filename, mode="w") do xf
+    #     sheet = xf[1]
+    #     for a in eachindex(actions)
+    #         sheet["B" * string(rows[a])] = "Action: " * actions[a]
+    #         sheet["C" * string(rows[a]+1)] = states   # add states to row; equivalent to `sheet[cell index, dim=2]
+    #         sheet["B" * string(rows[a]+2), dim=1] = states   # add states to column
+    #         sheet["C" * string(rows[a]+2) * ":" * "T" * string(rows[a]+1+18)] = R[a,:,:]
+    #     end
+    # end
+end
+
+"""
+DESCRIPTION.
+"""
+function load_R(states, actions, action_sets, filename_no_week_no_ext, T::Int)
     num_states = length(states)
     num_actions = length(actions)
     R = zeros(T, num_states, num_actions) # R_t(i,a)

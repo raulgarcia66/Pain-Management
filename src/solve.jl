@@ -1,11 +1,12 @@
 """
 Algorithm implementations for policy computation.
 """
+
 using LinearAlgebra
 using Pipe
 include("./util.jl")
 
-function compute_policy(states, actions, action_sets, R, P, T; u_terminal=zeros(length(states)))
+function compute_policy(states, actions, action_sets, R::Array{W,3}, P, T; u_terminal=zeros(length(states))) where W
     # Compute policy via value iteration
     # R(a,i,j) is dimension num_actions × num_states × num_states
     num_states = length(states)
@@ -30,7 +31,7 @@ function compute_policy(states, actions, action_sets, R, P, T; u_terminal=zeros(
     return u, π
 end
 
-function compute_policy_mult_actions(states, actions, action_sets::Vector{W}, R, P, T; u_terminal=zeros(length(states))) where {W}
+function compute_policy_mult_actions(states, actions, action_sets::Vector{V}, R::Array{W,3}, P, T; u_terminal=zeros(length(states))) where {V,W}
     # Compute policy via value iteration
     # R(a,i,j) is dimension num_actions × num_states × num_states
     num_states = length(states)
@@ -68,7 +69,8 @@ function compute_policy_mult_actions(states, actions, action_sets::Vector{W}, R,
     return u, π, optimal_actions
 end
 
-function compute_policy_time_dep_rewards(states, actions, action_sets, R, P, T; u_terminal=zeros(length(states)))
+# compute_policy_time_dep_rewards
+function compute_policy(states, actions, action_sets, R::Vector{Array{W,2}}, P, T; u_terminal=zeros(length(states))) where W
     # Compute policy via value iteration
     # R(t,i,a) is dimension time_period × num_states × num_actions
     num_states = length(states)
