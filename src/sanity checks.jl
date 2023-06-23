@@ -32,18 +32,23 @@ time_states = [Int[] for _ in eachindex(states), _ in eachindex(actions)]
 
 for i in eachindex(states), a in action_sets[i]
 
-    initial_evolution = ""
+    current_trend = ""
     if R[2][i,a] < R[1][i,a]
-        initial_evolution = "nonincreasing"
+        current_trend = "nonincreasing"
     else
-        initial_evolution = "nondecreasing"
+        current_trend = "nondecreasing"
     end
 
     monotone = true
     for t = 3:T
-        if (R[t][i,a] < R[t-1][i,a] && initial_evolution == "nondecreasing") ||
-                        (R[t][i,a] > R[t-1][i,a] && initial_evolution == "nonincreasing")
+        if (R[t][i,a] < R[t-1][i,a] && current_trend == "nondecreasing") # ||
+                        # (R[t][i,a] > R[t-1][i,a] && current_trend == "nonincreasing")
             monotone = false
+            current_trend = "nonincreasing"
+            push!(time_states[i,a], t)
+        elseif (R[t][i,a] > R[t-1][i,a] && current_trend == "nonincreasing")
+            monotone = false
+            current_trend = "nondecreasing"
             push!(time_states[i,a], t)
         end
     end
@@ -52,4 +57,44 @@ end
 
 collect(eachrow(time_states))
 
-# Summary: Def not monotone
+# Summary: Def not monotone. Oscillates.
+
+##################################################################################
+##################################################################################
+# Monotoneness of value function
+T = 6
+time_states = [Int[] for _ in eachindex(states)]
+
+for i in eachindex(states)
+
+    current_trend = ""
+    if u[2][i] < u[1][i]
+        current_trend = "nonincreasing"
+    else
+        current_trend = "nondecreasing"
+    end
+
+    monotone = true
+    for t = 3:T
+        if (u[t][i] < u[t-1][i] && current_trend == "nondecreasing") # ||
+                        # (u[t][i] > u[t-1][i] && current_trend == "nonincreasing")
+            monotone = false
+            current_trend = "nonincreasing"
+            push!(time_states[i], t)
+        elseif (u[t][i] > u[t-1][i] && current_trend == "nonincreasing")
+            monotone = false
+            current_trend = "nondecreasing"
+            push!(time_states[i], t)
+        end
+    end
+
+end
+
+collect(eachrow(time_states))
+
+# Summary: Not monotone
+
+##################################################################################
+##################################################################################
+# Vary one state component, fix others. Check for one period at a time
+
