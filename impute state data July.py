@@ -57,11 +57,11 @@ df = df_init[col_names]
 df = df.replace("NA", np.nan)
 
 ### Interpolate
-# estimator = LinearRegression()
-# method = "LR"
+estimator = LinearRegression()
+method = "LR"
 
-estimator = BayesianRidge()  # default
-method = "BR"
+# estimator = BayesianRidge()  # default
+# method = "BR"
 
 num_iter = 100
 imp = IterativeImputer(missing_values=np.nan, max_iter=num_iter, verbose=2, imputation_order='ascending',
@@ -84,13 +84,13 @@ df_final = df_final.astype(convert_dict)
 ### Correct data
 # Only 'Stage' from categorical features had nan's
 # print(df_final['Stage'].unique())  # [4 3 1 2]
-# df_init['Stage'] = df_init['Stage'].replace([5,6,7,8,9,10], 4)
+# df_final['Stage'] = df_final['Stage'].replace([5,6,7,8,9,10], 4)
 
 # for week in range(1,8):
 #     print(df_final[f'Pain score_W{week}'].unique())
-df_init['Pain score_W7'] = df_init['Stage'].replace(11, 4)
+df_final['Pain score_W7'] = df_final['Stage'].replace(11, 4)  # only this needs correcting
 
-### Calculate BMI
+### Calculate BMI. Multiply by (100)^2 since our height is in cm
 df_final['PreBMI'] = df_final['Pre_RT_wt_kg'] / ( df_final['Height'] **2 ) * 10000
 df_final['W1BMI'] = df_final['W1_wt'] / ( df_final['Height'] **2 ) * 10000
 df_final['W2BMI'] = df_final['W2_wt'] / ( df_final['Height'] **2 ) * 10000
