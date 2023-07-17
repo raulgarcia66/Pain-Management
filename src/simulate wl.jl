@@ -2,7 +2,7 @@
 Simulate stochastic process.
 """
 
-include("./parameters.jl")
+include("./parameters wl.jl")
 include("./solve.jl")
 
 rows_dropped = "none"

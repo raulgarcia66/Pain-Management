@@ -2,7 +2,7 @@
 Check parameters and rewards for validity and monotoneness.
 """
 
-include("./parameters.jl")
+include("./parameters wl.jl")
 include("./util.jl")
 include("./solve.jl")
 
