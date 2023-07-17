@@ -2,7 +2,7 @@
 Define rewards and compute respective policies.
 """
 
-include("./parameters.jl")
+include("./parameters wl.jl")
 include("./util.jl")
 include("./solve.jl")
 

@@ -219,3 +219,45 @@ function load_R(states, actions, action_sets, filename_no_week_no_ext, T::Int)
 
     return R
 end
+
+"""
+Load rewards with BMI in states.
+"""
+function load_R_bmi(states, actions, action_sets, filename, T::Int)
+    num_states = length(states)
+    num_actions = length(actions)
+    R = [zeros(num_states, num_actions) for _ in 1:T]
+
+    # Read in for one time period
+    data_xlsx = XLSX.readxlsx(filename)
+    sheet = data_xlsx["Sheet1"]
+
+    col_names = ["$i" for i = 1:3]
+
+    # TODO: Missing values currently set to 0. What is the real solution?
+    mat_w1 = @pipe DataFrame(sheet["B2:D21"], col_names) |> mapcols(col -> replace(col, missing => 0), _) |> Matrix(_)
+    mat_w1 = @pipe mat_w1[[1:6;8:13;15:20],end:-1:1] |> convert.(Float64, _) # remove actions in rows 7 and 14
+    
+    mat_w2 = @pipe DataFrame(sheet["G2:I21"], col_names) |> mapcols(col -> replace(col, missing => 0), _) |> Matrix(_)
+    mat_w2 = @pipe mat_w2[[1:6;8:13;15:20],end:-1:1] |> convert.(Float64, _) # remove actions in rows 7 and 14
+
+    mat_w3 = @pipe DataFrame(sheet["L2:N21"], col_names) |> mapcols(col -> replace(col, missing => 0), _) |> Matrix(_)
+    mat_w3 = @pipe mat_w3[[1:6;8:13;15:20],end:-1:1] |> convert.(Float64, _) # remove actions in rows 7 and 14
+    
+    mat_w4 = @pipe DataFrame(sheet["B26:D45"], col_names) |> mapcols(col -> replace(col, missing => 0), _) |> Matrix(_)
+    mat_w4 = @pipe mat_w4[[1:6;8:13;15:20],end:-1:1] |> convert.(Float64, _) # remove actions in rows 7 and 14
+    
+    mat_w5 = @pipe DataFrame(sheet["G26:I45"], col_names) |> mapcols(col -> replace(col, missing => 0), _) |> Matrix(_)
+    mat_w5 = @pipe mat_w5[[1:6;8:13;15:20],end:-1:1] |> convert.(Float64, _) # remove actions in rows 7 and 14
+    
+    mat_w6 = @pipe DataFrame(sheet["L26:N45"], col_names) |> mapcols(col -> replace(col, missing => 0), _) |> Matrix(_)
+    mat_w6 = @pipe mat_w6[[1:6;8:13;15:20],end:-1:1] |> convert.(Float64, _) # remove actions in rows 7 and 14
+    
+    mat_vec = [mat_w1, mat_w2, mat_w3, mat_w4, mat_w5, mat_w6]
+
+    for t = 1:T, i = 1:num_states, a in eachindex(action_sets[i])
+        R[t][i,action_sets[i][a]] = copy(mat_vec[t][i,a])
+    end
+
+    return R
+end

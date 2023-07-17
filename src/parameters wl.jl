@@ -92,4 +92,4 @@ P[5]
 
 ##### Rewards
 # See policy.jl
-println("Executed parameters.jl")
+println("Parameters set.")
