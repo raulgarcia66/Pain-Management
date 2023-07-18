@@ -9,10 +9,10 @@ from sklearn.linear_model import LinearRegression, BayesianRidge
 # from sklearn.svm import SVR
 
 work_dir = os.getcwd()
-folder = "Data for states and transitions July"
+folder = "Data for states and transitions bmi"
 filename = "BMI patient states imputed method LR added cols.xlsx"
-full_path = os.path.join(work_dir, folder, filename)
-df_init = pd.read_excel(full_path)
+fullpath_read = os.path.join(work_dir, folder, filename)
+df_init = pd.read_excel(fullpath_read)
 
 print(df_init)
 # print(df_init.columns.values.tolist())

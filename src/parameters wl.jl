@@ -8,7 +8,12 @@ using Pipe
 include("./util.jl")
 
 # Load data
-data_xlsx = XLSX.readxlsx("patients-states.xlsx")
+work_dir = pwd()
+folder = "Data for states and transitions weight loss"
+local_name = "patients-states.xlsx"
+filename = joinpath(work_dir, folder, local_name)
+
+data_xlsx = XLSX.readxlsx(filename)
 sheet = data_xlsx["Sheet1"]
 
 # Create DataFames for boostrapped transition matrix, original transition matrix, and transition counts
