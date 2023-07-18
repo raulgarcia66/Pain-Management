@@ -7,6 +7,9 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.svm import SVR
 
+# TODO: Make filenames full paths
+
+# fullpath_read = 
 df_init = pd.read_excel("MDASI-v3.xlsx")
 rows_dropped = "none"
 
@@ -104,6 +107,7 @@ for time_period in time_periods:
 # print(df_final)
 
 ### Save to excel files (using 100 iterations and 'ascending' imputation order)
+# fullpath_write = 
 df_final.to_excel(f"MDASI imputed {method} {rows_dropped} dropped.xlsx", index=False, float_format="%.4f", sheet_name="MDASI scores")
 
 

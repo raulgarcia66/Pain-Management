@@ -4,6 +4,8 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.linear_model import LinearRegression
 
+# TODO: Make filenames full paths
+# fullpath_read = 
 df_init = pd.read_excel("Pain data-new - Raul - Weekly pain imputed.xlsx", sheet_name="Pain data", usecols="A:AL")
 col_names = ["Pre_RT_pain_score", "Pain_score_W1","Pain_score_W2","Pain_score_W3","Pain_score_W4","Pain_score_W5","Pain_score_W6","Pain_score_W7",
              "Pre_RT_wt_kg","W1_wt","W2_wt","W3_wt","W4_wt","W5_wt","W6_wt","W7_wt"]
@@ -28,6 +30,7 @@ print(df_final)
 
 # raw 2 used LinearRegression() with max_iter 100 (stopped at 94); raw 1 used BayesianRidge() with max_iter 50
 # Always make sure file name is updated
+# fullpath_write = 
 df_final.to_excel("Pain data-new - Raul - Python raw 2.xlsx", index=False, float_format="%.1f", sheet_name="Pain data")
 
 

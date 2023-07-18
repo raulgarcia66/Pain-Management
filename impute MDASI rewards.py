@@ -10,6 +10,8 @@ from sklearn.svm import SVR
 rows_dropped = "none"  # ["none", "blanks"]
 method = "BR"  # ["LR", "BR", "RF" "KNN", "SVR kernel linear", "SVR kernel rbf"]
 week = 6
+# TODO: Make filenames full paths
+# fullpath_read = 
 df_init = pd.read_excel(f"Reward_SAT_{method}_{rows_dropped}_dropped_W{week}.xlsx")
 df = df_init.iloc[:-2]  # drop last 2 rows picked up
 df.drop(columns=df_init.columns[0], axis=1, inplace=True)  # drop first column (states)
@@ -43,5 +45,6 @@ df_array = imp.fit_transform(df)
 ### Convert to a DataFrame
 df_final = pd.DataFrame(data = df_array, index = range(df_array.shape[0]), columns=df.columns)
 
-# ### Save to excel files (using 100 iterations and 'ascending' imputation order)
+### Save to excel files (using 100 iterations and 'ascending' imputation order)
+# fullpath_write = 
 df_final.to_excel(f"Rewards imputed {method} order {order} {rows_dropped} dropped week {week}.xlsx", index=False, sheet_name="Rewards") # float_format="%.4f"
