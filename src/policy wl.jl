@@ -7,15 +7,29 @@ include("./util.jl")
 include("./solve.jl")
 
 rows_dropped = "none"
-method = "LR"
+method = "BR"
 order = "ascending"
 
 #### Rewards
-filename_no_week_no_ext = "Rewards imputed $method order $order $rows_dropped dropped"
-R = load_R(states, actions, action_sets, filename_no_week_no_ext, T)
+work_dir = pwd()
+folder = "Policy weight loss"
+local_name_no_week_no_ext = "Rewards imputed $method order $order $rows_dropped dropped"
+filename = joinpath(work_dir, folder, local_name_no_week_no_ext)
+
+R = load_R(states, actions, action_sets, filename, T)
 
 #### Compute policy
 u, π = compute_policy(states, actions, action_sets, R, P, T)
+
+permuted_indices = [3,2,1,6,5,4,9,8,7,12,11,10,15,14,13,18,17,16]
+# new_states = states[permuted_indices]
+π = map(t -> π[t][permuted_indices], 1:T)
+u = map(t -> u[t][permuted_indices], 1:(T+1))
+
+# Re-order states to be consistent with new presentation ordering
+states = ["[0,MM,G]", "[0,MM,A]", "[0,MM,P]", "[0,MS,G]", "[0,MS,A]", "[0,MS,P]",
+    "[1,MM,G]", "[1,MM,A]", "[1,MM,P]", "[1,MS,G]", "[1,MS,A]", "[1,MS,P]",
+    "[2,MM,G]", "[2,MM,A]", "[2,MM,P]", "[2,MS,G]", "[2,MS,A]", "[2,MS,P]"]
 
 # t = 1
 # i = 5
@@ -30,14 +44,17 @@ u, π = compute_policy(states, actions, action_sets, R, P, T)
 local_file_names = String[]
 # push!(local_file_names, "Experiment summary.txt")
 # push!(local_file_names, "Experiment and policy summary.txt")
-push!(local_file_names, "Policy $method order $order $rows_dropped dropped.txt")
+push!(local_file_names, "Policy wl method $method order $order $rows_dropped dropped.txt")
 for filename in local_file_names
     # if filename == "Policy $exp_count.txt"
     #     f = open(filename, "w")
     # else
     #     f = open(filename, "a")
     # end
-    f = open(filename, "w")
+    work_dir = pwd()
+    folder = "Policy weight loss"
+    fullpath = joinpath(work_dir, folder, filename)
+    f = open(fullpath, "w")
 
     write(f, "Method: $method\nOrder: $order\nRows dropped: $rows_dropped\n")
     # if using_orig_matrix
