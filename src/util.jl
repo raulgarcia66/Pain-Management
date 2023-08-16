@@ -264,17 +264,15 @@ function load_R_bmi(states, actions, action_sets, filename, T::Int)
     #######################################################################
     data_xlsx = XLSX.readxlsx(filename)
     for t = 1:T
-        # data_xlsx = XLSX.readxlsx(filename)
         sheet = data_xlsx["Week $t"]
 
-        col_names = ["$i" for i = 1:3]
+        col_names = ["$i" for i = 1:3]  # no meaning
 
         mat = @pipe DataFrame(sheet["B2:D19"], col_names) |> Matrix(_)
         mat = mat[:,end:-1:1]
 
-        # for i = 1:num_states, a in eachindex(action_sets[i])
-        #     R[t][i,action_sets[i][a]] = copy(mat[i,a])
-        # end
+        # action_sets[i][a] ∈ 1:5, hence if, say, it is 5, that corresponds to action "-2",
+        # which is in the 3rd column of mat
         for i = 1:num_states
             index_shift = 1
             if i ∈ 1:6
@@ -288,6 +286,54 @@ function load_R_bmi(states, actions, action_sets, filename, T::Int)
                 R[t][i,action_sets[i][a]] = copy(mat[i,action_sets[i][a] + index_shift])
             end
         end
+        # Hence, this wouldn't work
+        # for i = 1:num_states, a in eachindex(action_sets[i])
+        #     R[t][i,action_sets[i][a]] = copy(mat[i,a])
+        # end
+    end
+
+    return R
+end
+
+"""
+Load rewards which use MDASI scores and weight loss. These rewards are all in one file.
+"""
+function load_R_mdasi_wl(states, actions, action_sets, filename, T::Int)
+    num_states = length(states)
+    num_actions = length(actions)
+    R = [zeros(num_states, num_actions) for _ in 1:T]
+
+    data_xlsx = XLSX.readxlsx(filename)
+    sheet = data_xlsx["rewards"]
+    col_names = ["$i" for i = 1:3]  # no meaning
+    for t = 1:T
+        top_left = 24 * (t-1) + 3
+        bottom_right = 24 * (t-1) + 22
+        range = "B$top_left:D$bottom_right"
+
+        mat = @pipe DataFrame(sheet[range], col_names) |> mapcols(col -> replace(col, "NaN" => NaN), _) |> Matrix{Float64}(_)
+        mat = mat[:,end:-1:1]
+        mat = mat[[collect(1:6);collect(8:13);collect(15:20)], :]  # Remove cells with action labels
+
+        # action_sets[i][a] ∈ 1:5, hence if, say, it is 5, that corresponds to action "-2",
+        # which is in the 3rd column of mat
+        for i = 1:num_states
+            index_shift = 1
+            if i ∈ 1:6
+                index_shift = 0
+            elseif i ∈ 7:12
+                index_shift = -1
+            elseif i ∈ 13:18
+                index_shift = -2
+            end
+            for a in eachindex(action_sets[i])
+                R[t][i,action_sets[i][a]] = copy(mat[i,action_sets[i][a] + index_shift])
+            end
+        end
+        # Hence, this wouldn't work
+        # for i = 1:num_states, a in eachindex(action_sets[i])
+        #     R[t][i,action_sets[i][a]] = copy(mat[i,a])
+        # end
     end
 
     return R

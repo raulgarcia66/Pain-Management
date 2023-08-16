@@ -7,15 +7,14 @@ using DataFrames
 using Pipe
 include("./util.jl")
 
-# Load data
+#### Load data
 work_dir = pwd()
 folder = "Data for states and transitions bmi"
 data_xlsx = XLSX.readxlsx(joinpath(work_dir, folder, "transition_probabilities_BMI.xlsx"))
 sheet = data_xlsx["Sheet1"]
 
 # Create DataFames for boostrapped transition matrix, original transition matrix, and transition counts
-P_full = @pipe DataFrame(sheet["B3:S20"], string.(collect(1:18))) |> mapcols(col -> replace(col, missing => 0), _) |> 
-    convert.(Float64, _) |> Matrix(_)
+P_full = @pipe DataFrame(sheet["B3:S20"], string.(collect(1:18))) |> mapcols(col -> replace(col, missing => 0), _) |> Matrix{Float64}(_)
 
 ##### Horizon
 T = 6   # num decision epochs (⟹ horizon is T+1)
@@ -37,7 +36,7 @@ actions = ["+2", "+1", "0" , "-1", "-2"]
 num_actions = length(actions)
 
 # actions also omitted if computed trans. prob. are 0
-# TODO: Switch the actions sets once the order of states is finalized
+# TODO: Switch the actions sets once the order of states is finalized (think this has been done)
 action_sets = [(1,2,3), (1,2,3), (1,2,3), (1,2,3), (2,3), (2,3),
               (2,3,4), (2,3,4), (2,3,4), (2,3,4), (2,3), (2,3,4),
               (3,4,5), (3,), (3,4,5), (3,4,5), (3,4,5), (3,5)]
@@ -77,12 +76,12 @@ P[5][13:18, 1:6] = P_full[13:18, 1:6]
 P[5]
 # for row in eachrow(P[5]) println("$(sum(row))") end
 
-for i in eachindex(P)
-    println("\nMatrix for action $(actions[i])")
-    for row in eachrow(P[i])
-        println("$(sum(row))")
-    end
-end
+# for i in eachindex(P)
+#     println("\nMatrix for action $(actions[i])")
+#     for row in eachrow(P[i])
+#         println("$(sum(row))")
+#     end
+# end
 
 
 ##### Rewards
